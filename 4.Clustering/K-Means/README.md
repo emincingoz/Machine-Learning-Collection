@@ -36,4 +36,8 @@ To overcome the *random initialization trap* we use K-Means++. This algorithm en
 3. Select the next centroid from the data points such that the probability of choosing a point as centroid is directly proportional to its distance from the nearest, previously choosen centroid (The point having maximum distance from the nearest centroid is most likely to be selected next as a centroid.)
 4. Repeat steps 2 and 3 until k centroids have been sampled.
 
+## WCSS
+WCSS (Within-Cluster Sums of Squares)
+
+![image](https://user-images.githubusercontent.com/49842813/161447828-fd59ffb9-2931-440f-a66f-51b902acf0f3.png)
 
