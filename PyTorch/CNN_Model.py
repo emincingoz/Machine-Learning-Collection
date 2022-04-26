@@ -130,7 +130,59 @@ plt.imshow(x_train[45001, :].reshape(64, 32), cmap = 'gray')
 plt.show()
 
 
+#%% CNN model
+
+# Hyperparameter
+epochs = 5000
+num_classes = 2
+batch_size = 8933
+learning_rate = 0.00001
+
+
+class Net(nn.Module):   # nn.Module'dan inherit edilir
+    def __init__(self):
+        super(Net, self).__init__()
+        
+        # Parameters: in_channels, out_channels, kernel_size
+        self.conv1 = nn.Conv2d(1, 10, 5)
+        self.pool1 = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(10, 16, 5)
+        
+        # Fully Connected Layers
+        self.fc1 = nn.Linear(16 * 13 * 5, 520)
+        self.fc2 = nn.Linear(530, 130)
+        self.fc3 = nn.Linear(130, num_classes)
+    
+    def forward(self, x):
+        
+        # Convolution blogu + relu activation + maxpool
+        a = self.pool(F.relu(self.conv1(x)))
+        b = self.pool(F.relu(self.conv1(a)))
+        
+        # Flatten
+        c = b.view(-1, 16 * 13 * 5)
+        
+        d = F.relu(self.fc1(c))
+        e = F.relu(self.fc2(d))
+        f = self.fc3(e)
+        
+        return f
+        
+        
 #%%
+
+# Modele vermek için TensorDataset oluşturuldu (bağımlı ve bağımsız değişkenleri birleştirir.)
+train = torch.utils.data.TensorDataset(x_train, y_train)
+train_loader = torch.utils.data.DataLoader(train, batch_size = batch_size, shuffle = True)
+
+
+test = torch.utils.data.TensorDataset(x_test, y_test)
+test_loader = torch.utils.data.DataLoader(test, batch_size = batch_size, shuffle = True)
+        
+
+#net = Net()                # CPU ile eğitim
+net = Net().to(device)      # GPU kullanırken ekran kartına gönderilmesi gerekiyor. CPU için gerek yok    
+    
 
 
 
