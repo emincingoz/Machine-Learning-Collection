@@ -156,8 +156,8 @@ class Net(nn.Module):   # nn.Module'dan inherit edilir
     def forward(self, x):
         
         # Convolution blogu + relu activation + maxpool
-        a = self.pool(F.relu(self.conv1(x)))
-        b = self.pool(F.relu(self.conv1(a)))
+        a = self.pool1(F.relu(self.conv1(x)))
+        b = self.pool1(F.relu(self.conv1(a)))
         
         # Flatten
         c = b.view(-1, 16 * 13 * 5)
@@ -184,9 +184,116 @@ test_loader = torch.utils.data.DataLoader(test, batch_size = batch_size, shuffle
 net = Net().to(device)      # GPU kullanırken ekran kartına gönderilmesi gerekiyor. CPU için gerek yok    
     
 
+#%% Loss and Optimizer
+
+# Loss function
+criterion = nn.CrossEntropyLoss()
+
+# optimizer
+import torch.optim as optim
+optimizer = optim.SGD(net.parameters(), lr = learning_rate, momentum = 0.8)
 
 
+#%% Training
 
+start = time.time()
+
+train_accuracy = []
+test_accuracy = []
+loss_list = []
+
+use_gpu = True  # True  # GPU kullanılmayacaksa False
+
+# train
+for epoch in range(epochs):
+    for i, data in enumerate(train_loader, 0):
+        inputs, labels = data
+        
+        # parameter 1, number of channel
+        inputs = inputs.view(batch_size, 1, 64, 32) # reshape
+        inputs = inputs.float()                     # float
+        
+        # use_gpu
+        if use_gpu:
+            if torch.cuda.is_available():
+                inputs, labels = inputs.to(device), labels.to(device)   # inputs ve labels gpu'ya gönderilir.
+        
+    
+        # zero gradient
+        optimizer.zero_grad()
+
+        # forward
+        outputs = net(inputs)
+        
+        # loss
+        loss = criterion(outputs, labels)
+        
+        # back
+        loss.backward()
+        
+        # update weights
+        optimizer.step()
+        
+    # Test
+    correct = 0     # correct prediction number
+    total = 0       # total number
+    with torch.no_grad():   # backpropagation kapatılır, epoch sonu için.
+        for data in test_loader:
+            images, labels = data
+            
+            images = images.view(batch_size, 1, 64, 32)
+            images = images.float()
+            
+            
+            # use_gpu
+            if use_gpu:
+                if torch.cuda.is_available():
+                    images, labels = images.to(device), labels.to(device)   # inputs ve labels gpu'ya gönderilir.
+        
+            outputs = net(images)
+            _, predicted = torch.max(outputs.data, 1)
+            
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+            
+            
+    acc1 = 100 * correct / total
+    print('Accuracy test: ', acc1)
+    test_accuracy.append(acc1)
+    
+    
+    # Train
+    correct = 0     # correct prediction number
+    total = 0       # total number
+    with torch.no_grad():   # backpropagation kapatılır, epoch sonu için.
+        for data in train_loader:
+            images, labels = data
+            
+            images = images.view(batch_size, 1, 64, 32)
+            images = images.float()
+            
+            s
+            # use_gpu
+            if use_gpu:
+                if torch.cuda.is_available():
+                    images, labels = images.to(device), labels.to(device)   # inputs ve labels gpu'ya gönderilir.
+        
+            outputs = net(images)
+            _, predicted = torch.max(outputs.data, 1)
+            
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+            
+            
+    acc2 = 100 * correct / total
+    print('Accuracy train: ', acc2)
+    train_accuracy.append(acc2)
+    
+print('Train is Done')
+
+end = time.time()
+process_time = (end - start) / 60
+print('Process Time: ', process_time)
 
 
 
